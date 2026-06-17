@@ -8,7 +8,10 @@ dependencies = [
     "fastmcp",
     "httpx",
     "livekit-agents[deepgram,groq,openai,sarvam,silero]>=1.5.1",
+    "livekit-plugins-cartesia>=1.5.1",
+    "livekit-plugins-elevenlabs>=1.5.1",
     "livekit-plugins-google>=1.5.1",
+    "livekit-plugins-groq>=1.5.1",
     "python-dotenv",
 ]
 

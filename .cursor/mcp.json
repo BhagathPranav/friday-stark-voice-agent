@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "jetro": {
+      "type": "stdio",
+      "command": "/Users/bhagath/.jetro/runtime/node-darwin-arm64",
+      "args": [
+        "/Users/bhagath/.jetro/mcp-server/index.js"
+      ],
+      "env": {
+        "JET_WORKSPACE": "/Users/bhagath/Desktop/friday-tony-stark-demo",
+        "JET_API_URL": "https://api.jetro.ai",
+        "PATH": "/Users/bhagath/.jetro/runtime:/Users/bhagath/google-cloud-sdk/bin:/Users/bhagath/.local/bin:/Users/bhagath/.antigravity-ide/antigravity-ide/bin:/Users/bhagath/.antigravity/antigravity/bin:/Users/bhagath/.antigravity/antigravity/bin:/Users/bhagath/opt/anaconda3/bin:/Users/bhagath/opt/anaconda3/condabin:/Users/bhagath/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/opt/X11/bin:/usr/local/MacGPG2/bin"
+      }
+    }
+  }
+}

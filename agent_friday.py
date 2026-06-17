@@ -22,17 +22,18 @@ from livekit.agents.voice import Agent, AgentSession
 from livekit.agents.llm import mcp
 
 # Plugins
-from livekit.plugins import google as lk_google, openai as lk_openai, sarvam, silero
+from livekit.plugins import openai as lk_openai, sarvam, silero
+from livekit.plugins import cartesia
 
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
 
 STT_PROVIDER       = "sarvam"
-LLM_PROVIDER       = "gemini"
-TTS_PROVIDER       = "openai"
+LLM_PROVIDER       = "groq"
+TTS_PROVIDER       = "cartesia"
 
-GEMINI_LLM_MODEL   = "gemini-2.5-flash"
+GROQ_LLM_MODEL     = "llama-3.3-70b-versatile"
 OPENAI_LLM_MODEL   = "gpt-4o"
 
 OPENAI_TTS_MODEL   = "tts-1"
@@ -221,9 +222,13 @@ def _build_llm():
     if LLM_PROVIDER == "openai":
         logger.info("LLM → OpenAI (%s)", OPENAI_LLM_MODEL)
         return lk_openai.LLM(model=OPENAI_LLM_MODEL)
-    elif LLM_PROVIDER == "gemini":
-        logger.info("LLM → Google Gemini (%s)", GEMINI_LLM_MODEL)
-        return lk_google.LLM(model=GEMINI_LLM_MODEL, api_key=os.getenv("GOOGLE_API_KEY"))
+    elif LLM_PROVIDER == "groq":
+        logger.info("LLM → Groq (%s)", GROQ_LLM_MODEL)
+        return lk_openai.LLM(
+            model=GROQ_LLM_MODEL, 
+            api_key=os.getenv("GROQ_API_KEY"),
+            base_url="https://api.groq.com/openai/v1"
+        )
     else:
         raise ValueError(f"Unknown LLM_PROVIDER: {LLM_PROVIDER!r}")
 
@@ -240,6 +245,9 @@ def _build_tts():
     elif TTS_PROVIDER == "openai":
         logger.info("TTS → OpenAI TTS (%s / %s)", OPENAI_TTS_MODEL, OPENAI_TTS_VOICE)
         return lk_openai.TTS(model=OPENAI_TTS_MODEL, voice=OPENAI_TTS_VOICE, speed=TTS_SPEED)
+    elif TTS_PROVIDER == "cartesia":
+        logger.info("TTS → Cartesia TTS")
+        return cartesia.TTS()
     else:
         raise ValueError(f"Unknown TTS_PROVIDER: {TTS_PROVIDER!r}")
 
@@ -348,4 +356,9 @@ def dev():
     main()
 
 if __name__ == "__main__":
-    main()
+    cli.run_app(
+        WorkerOptions(
+            entrypoint_fnc=entrypoint,
+            agent_name="friday",
+        )
+    )
