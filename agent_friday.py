@@ -23,7 +23,7 @@ from livekit.agents.llm import mcp
 
 # Plugins
 from livekit.plugins import openai as lk_openai, sarvam, silero
-from livekit.plugins import cartesia
+from livekit.plugins import cartesia, elevenlabs
 
 # ---------------------------------------------------------------------------
 # CONFIG
@@ -248,6 +248,9 @@ def _build_tts():
     elif TTS_PROVIDER == "cartesia":
         logger.info("TTS → Cartesia TTS")
         return cartesia.TTS()
+    elif TTS_PROVIDER == "elevenlabs":
+        logger.info("TTS → ElevenLabs TTS")
+        return elevenlabs.TTS()
     else:
         raise ValueError(f"Unknown TTS_PROVIDER: {TTS_PROVIDER!r}")
 

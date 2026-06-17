@@ -7,7 +7,7 @@ A Tony Stark-inspired AI assistant split into two cooperating pieces:
 | Component | What it is |
 |-----------|-----------|
 | **MCP Server** (`uv run friday`) | A [FastMCP](https://github.com/jlowin/fastmcp) server that exposes tools (news, web search, system info, …) over SSE. Think of it as the Stark Industries backend — it does the actual work. |
-| **Voice Agent** (`uv run friday_voice`) | A [LiveKit Agents](https://github.com/livekit/agents) voice pipeline that listens to your microphone, reasons with an LLM (Gemini 2.5 Flash by default), and speaks back with OpenAI TTS — all while pulling tools from the MCP server in real time. |
+| **Voice Agent** (`uv run friday_voice`) | A [LiveKit Agents](https://github.com/livekit/agents) voice pipeline that listens to your microphone, reasons with an LLM (Groq Llama 3.3 by default), and speaks back with Cartesia TTS — all while pulling tools from the MCP server in real time. |
 
 Demo: [Instagram reel](https://www.instagram.com/p/DW2HjYtkwg_/)
 
@@ -21,10 +21,10 @@ Demo: [Instagram reel](https://www.instagram.com/p/DW2HjYtkwg_/)
 Microphone ──► STT (Sarvam Saaras v3)
                     │
                     ▼
-             LLM (Gemini 2.5 Flash)  ◄──────► MCP Server (FastMCP / SSE)
+             LLM (Groq Llama 3.3)    ◄──────► MCP Server (FastMCP / SSE)
                     │                              ├─ get_world_news
                     ▼                              ├─ open_world_monitor
-             TTS (OpenAI nova)                     ├─ search_web
+             TTS (Cartesia)                        ├─ search_web
                     │                              └─ …more tools
                     ▼
              Speaker / LiveKit room
@@ -66,8 +66,8 @@ friday-tony-stark-demo/
 ### 2. Clone & install
 
 ```bash
-git clone https://github.com/SAGAR-TAMANG/friday-tony-stark-demo.git
-cd friday-tony-stark-demo
+git clone https://github.com/BhagathPranav/friday-stark-voice-agent.git
+cd friday-stark-voice-agent
 uv sync          # creates .venv and installs all dependencies
 ```
 
@@ -118,12 +118,14 @@ Copy `.env.example` → `.env` and fill in the values below.
 | `LIVEKIT_URL` | ✅ | [LiveKit Cloud dashboard](https://cloud.livekit.io) → your project URL |
 | `LIVEKIT_API_KEY` | ✅ | LiveKit Cloud → API Keys |
 | `LIVEKIT_API_SECRET` | ✅ | LiveKit Cloud → API Keys |
-| `GROQ_API_KEY` | optional | [console.groq.com](https://console.groq.com) — only needed if you switch `LLM_PROVIDER` to `"groq"` |
+| `GROQ_API_KEY` | ✅ (default LLM) | [console.groq.com](https://console.groq.com) |
+| `CARTESIA_API_KEY` | ✅ (default TTS) | [cartesia.ai](https://cartesia.ai) |
 | `SARVAM_API_KEY` | ✅ (default STT) | [dashboard.sarvam.ai](https://dashboard.sarvam.ai) |
-| `OPENAI_API_KEY` | ✅ (default TTS) | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| `OPENAI_API_KEY` | optional | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| `ELEVEN_API_KEY` | optional | [elevenlabs.io](https://elevenlabs.io) — only needed for ElevenLabs TTS |
 | `DEEPGRAM_API_KEY` | optional | [console.deepgram.com](https://console.deepgram.com) |
 | `GOOGLE_APPLICATION_CREDENTIALS` | optional | GCP service-account JSON path — only for `STT_PROVIDER = "google"` |
-| `GOOGLE_API_KEY` | ✅ (default LLM) | [aistudio.google.com](https://aistudio.google.com/projects) |
+| `GOOGLE_API_KEY` | optional | [aistudio.google.com](https://aistudio.google.com/projects) |
 | `SUPABASE_URL` | optional | [supabase.com](https://supabase.com) — for the ticketing tool |
 | `SUPABASE_API_KEY` | optional | Supabase project → API settings |
 
@@ -135,8 +137,8 @@ Open `agent_friday.py` and change the provider constants at the top:
 
 ```python
 STT_PROVIDER = "sarvam"   # "sarvam" | "whisper"
-LLM_PROVIDER = "gemini"   # "gemini" | "openai"
-TTS_PROVIDER = "openai"   # "openai" | "sarvam"
+LLM_PROVIDER = "groq"     # "groq" | "gemini" | "openai"
+TTS_PROVIDER = "cartesia" # "cartesia" | "openai" | "sarvam"
 ```
 
 ---
@@ -156,8 +158,8 @@ The MCP server will pick it up on next start.
 - **[FastMCP](https://github.com/jlowin/fastmcp)** — MCP server framework
 - **[LiveKit Agents](https://github.com/livekit/agents)** — real-time voice pipeline
 - **Sarvam Saaras v3** — STT (Indian-English optimised)
-- **Google Gemini 2.5 Flash** — LLM
-- **OpenAI TTS** (`nova` voice) — TTS
+- **Groq (Llama-3.3-70b-versatile)** — LLM
+- **Cartesia TTS** / **OpenAI TTS** / **ElevenLabs TTS** — TTS
 - **[uv](https://github.com/astral-sh/uv)** — fast Python package manager
 
 ---
