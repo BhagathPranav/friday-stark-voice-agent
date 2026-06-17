@@ -1,56 +1,54 @@
-# F.R.I.D.A.Y. — Tony Stark Demo
+# F.R.I.D.A.Y. — Stark Voice Agent
 
 > *"Fully Responsive Intelligent Digital Assistant for You"*
 
-A Tony Stark-inspired AI assistant split into two cooperating pieces:
+An advanced, Tony Stark-inspired real-time AI voice assistant built using LiveKit Agents and FastMCP. The project is split into two cooperating components:
 
-| Component | What it is |
-|-----------|-----------|
-| **MCP Server** (`uv run friday`) | A [FastMCP](https://github.com/jlowin/fastmcp) server that exposes tools (news, web search, system info, …) over SSE. Think of it as the Stark Industries backend — it does the actual work. |
-| **Voice Agent** (`uv run friday_voice`) | A [LiveKit Agents](https://github.com/livekit/agents) voice pipeline that listens to your microphone, reasons with an LLM (Groq Llama 3.3 by default), and speaks back with Cartesia TTS — all while pulling tools from the MCP server in real time. |
-
-Demo: [Instagram reel](https://www.instagram.com/p/DW2HjYtkwg_/)
-
-[![Demo Video Guide](https://img.youtube.com/vi/mMY9swqe3BI/maxresdefault.jpg)](https://www.youtube.com/watch?v=mMY9swqe3BI)
+| Component | Description |
+|-----------|-------------|
+| **MCP Server** (`uv run friday`) | A [FastMCP](https://github.com/jlowin/fastmcp) server exposing system tools, web search, and real-time feeds over SSE. |
+| **Voice Agent** (`uv run friday_voice`) | A [LiveKit Agents](https://github.com/livekit/agents) voice pipeline that transcribes voice, reasons via LLM, and streams speech using high-performance providers. |
 
 ---
 
 ## How it works
 
 ```
-Microphone ──► STT (Sarvam Saaras v3)
-                    │
-                    ▼
-             LLM (Groq Llama 3.3)    ◄──────► MCP Server (FastMCP / SSE)
-                    │                              ├─ get_world_news
-                    ▼                              ├─ open_world_monitor
-             TTS (Cartesia)                        ├─ search_web
-                    │                              └─ …more tools
-                    ▼
-             Speaker / LiveKit room
+ Microphone (User)
+       │
+       ▼
+ [STT] Sarvam Saaras v3 (Indian-English optimized)
+       │
+       ▼
+ [LLM] Groq Llama 3.3 / Google Gemini ◄──(SSE)──► [MCP Server] (FastMCP)
+       │                                            ├── News & Finance Feeds
+       ▼                                            ├── Web Search & Scraping
+ [TTS] Cartesia / OpenAI / ElevenLabs               └── OS & System Diagnostics
+       │
+       ▼
+ Speaker / LiveKit Room (Output)
 ```
 
-The voice agent connects to the MCP server via SSE at `http://127.0.0.1:8000/sse` (auto-resolved to the Windows host IP when running inside WSL).
+The LiveKit voice agent communicates with the FastMCP server over a Server-Sent Events (SSE) connection (default: `http://127.0.0.1:8000/sse`). When the user asks a question that requires external information or system actions, the LLM calls the appropriate tool from the MCP server, receives the result, and synthesizes a natural voice response.
 
 ---
 
 ## Project structure
 
 ```
-friday-tony-stark-demo/
-├── server.py           # uv run friday  → starts the MCP server (SSE on :8000)
-├── agent_friday.py     # uv run friday_voice → starts the LiveKit voice agent
-├── pyproject.toml
-├── .env.example        # copy → .env and fill in your keys
-│
-└── friday/             # MCP server package
-    ├── config.py       # env-var loading & app-wide settings
-    ├── tools/          # MCP tools (callable by the LLM)
-    │   ├── web.py      # search_web, fetch_url, get_world_news, open_world_monitor
-    │   ├── system.py   # get_current_time, get_system_info
-    │   └── utils.py    # format_json, word_count
-    ├── prompts/        # MCP prompt templates (summarize, explain_code, …)
-    └── resources/      # MCP resources exposed to clients (friday://info)
+friday-stark-voice-agent/
+├── server.py           # Starts the FastMCP server (SSE on port 8000)
+├── agent_friday.py     # Starts the LiveKit Voice Agent
+├── pyproject.toml      # Project dependencies and packaging settings
+├── .env.example        # Template for API keys and configuration
+└── friday/             # FastMCP server package
+    ├── config.py       # Configuration & environment variables loading
+    ├── prompts/        # MCP system prompts & template guidelines
+    ├── resources/      # Static resources exposed to the agent client
+    └── tools/          # Exposed tool definitions
+        ├── web.py      # news, finance, web search, & dashboard controls
+        ├── system.py   # system diagnostic tools
+        └── utils.py    # formatting & utility functions
 ```
 
 ---
@@ -111,23 +109,23 @@ Starts the LiveKit voice agent in **dev mode** — it joins a LiveKit room and b
 
 ## Environment variables
 
-Copy `.env.example` → `.env` and fill in the values below.
+Copy `.env.example` to `.env` and set the following keys:
 
-| Variable | Required | Where to get it |
-|----------|----------|----------------|
-| `LIVEKIT_URL` | ✅ | [LiveKit Cloud dashboard](https://cloud.livekit.io) → your project URL |
-| `LIVEKIT_API_KEY` | ✅ | LiveKit Cloud → API Keys |
-| `LIVEKIT_API_SECRET` | ✅ | LiveKit Cloud → API Keys |
-| `GROQ_API_KEY` | ✅ (default LLM) | [console.groq.com](https://console.groq.com) |
-| `CARTESIA_API_KEY` | ✅ (default TTS) | [cartesia.ai](https://cartesia.ai) |
-| `SARVAM_API_KEY` | ✅ (default STT) | [dashboard.sarvam.ai](https://dashboard.sarvam.ai) |
-| `OPENAI_API_KEY` | optional | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
-| `ELEVEN_API_KEY` | optional | [elevenlabs.io](https://elevenlabs.io) — only needed for ElevenLabs TTS |
-| `DEEPGRAM_API_KEY` | optional | [console.deepgram.com](https://console.deepgram.com) |
-| `GOOGLE_APPLICATION_CREDENTIALS` | optional | GCP service-account JSON path — only for `STT_PROVIDER = "google"` |
-| `GOOGLE_API_KEY` | optional | [aistudio.google.com](https://aistudio.google.com/projects) |
-| `SUPABASE_URL` | optional | [supabase.com](https://supabase.com) — for the ticketing tool |
-| `SUPABASE_API_KEY` | optional | Supabase project → API settings |
+| Variable | Required | Source / Description |
+|:---|:---:|:---|
+| `LIVEKIT_URL` | ✅ | [LiveKit Cloud Console](https://cloud.livekit.io) (Project Connection URL) |
+| `LIVEKIT_API_KEY` | ✅ | LiveKit API Key |
+| `LIVEKIT_API_SECRET` | ✅ | LiveKit API Secret |
+| `GROQ_API_KEY` | ✅ | [Groq Developer Console](https://console.groq.com) (Default LLM provider) |
+| `CARTESIA_API_KEY` | ✅ | [Cartesia Playberry Console](https://cartesia.ai) (Default TTS provider) |
+| `SARVAM_API_KEY` | ✅ | [Sarvam AI Dashboard](https://dashboard.sarvam.ai) (Default STT provider) |
+| `OPENAI_API_KEY` | optional | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| `ELEVEN_API_KEY` | optional | [ElevenLabs Dashboard](https://elevenlabs.io) (For optional ElevenLabs TTS) |
+| `DEEPGRAM_API_KEY` | optional | [Deepgram Console](https://console.deepgram.com) |
+| `GOOGLE_API_KEY` | optional | [Google AI Studio](https://aistudio.google.com/projects) (For Gemini LLM) |
+| `GOOGLE_APPLICATION_CREDENTIALS` | optional | Path to GCP service account JSON (For Google STT) |
+| `SUPABASE_URL` | optional | [Supabase Project Dashboard](https://supabase.com) |
+| `SUPABASE_API_KEY` | optional | Supabase Public / Anon Key |
 
 ---
 
